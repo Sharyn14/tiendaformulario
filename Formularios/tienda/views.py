@@ -1,7 +1,7 @@
 # Importamos utilidades para renderizar plantillas y para devolver un 404 si no existe el objeto
 from django.shortcuts import render, get_object_or_404, redirect
 from .models import Producto, Pedido, Cliente
-from .forms import ProductoForm
+from .forms import ProductoForm, ClienteForm
 
 # Vista de inicio (solo muestra una plantilla básica sin datos)
 def home(request):
@@ -87,5 +87,47 @@ def crear_producto(request):
             return redirect("tienda:Lista_productos")
     else:
         form = ProductoForm()
-    return render(request,"tienda/crear_producto.html", {"form": form})        
+    return render(request,"tienda/crear_producto.html", {"form": form}) 
+
+def editar_producto(request,pk):
+    producto= get_object_or_404(Producto, pk=pk)
+
+    if request.method =="POSR":
+        form=ProductoForm(request.POST, instance=producto)
+        if form.is_valid():
+            form.save()
+            return redirect ("tienda:detalle_producto", pk=producto.pk)
+    else:
+        form = ProductoForm(instance=producto)
+
+    return render (request,"tienda/editar_producto.html",{"form":form})
+
+def crear_cliente(request):
+    if request.method == "POST":
+        form = ClienteForm(request.POST)
+        if form.is_valid():
+            cliente = form.save()
+            return redirect("tienda:detalle_cliente", pk=cliente.pk)
+    else:
+        form = ClienteForm()
+
+    return render(request, "tienda/crear_cliente.html", {"form": form})
+
+def lista_clientes(request):
+    clientes = Cliente.objects.all().order_by("nombre")
+    return render(request, "tienda/lista_clientes.html", {"clientes": clientes})
+
+def editar_cliente(request, pk):
+    cliente = get_object_or_404(Cliente, pk=pk)
+
+    if request.method == "POST":
+        form = ClienteForm(request.POST, instance=cliente)
+        if form.is_valid():
+            form.save()
+            return redirect("tienda:detalle_cliente", pk=cliente.pk)
+    else:
+        form = ClienteForm(instance=cliente)
+
+    return render(request, "tienda/editar_cliente.html", {"form": form, "cliente": cliente})
+       
             
